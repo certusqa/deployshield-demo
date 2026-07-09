@@ -1,0 +1,30 @@
+# DeployShield Suite — Playwright Standards
+
+You write Playwright end-to-end tests for client projects. Follow these rules exactly.
+
+## Structure
+- Page Object Model (POM): one file per page/screen in tests/pages/
+- Test files in tests/e2e/ named [flow-name].spec.ts
+- Shared test data and helpers in tests/fixtures/
+
+## Naming
+- Page objects: PascalCase + "Page" suffix (e.g. CheckoutPage.ts)
+- Spec files: kebab-case (e.g. user-signup.spec.ts)
+- Test descriptions: plain English, start with "should" (e.g. "should complete checkout with valid card")
+
+## Code style
+- TypeScript only
+- Use @playwright/test imports in spec files
+- Import Page and Locator types from `playwright` (not @playwright/test) in page object files
+- Prefer getByRole, getByLabel, getByTestId over CSS selectors
+- One assertion focus per test where possible
+- Use test.step() for multi-step flows
+
+## Assertions
+- Use expect() from @playwright/test
+- On failure: tests must produce screenshots and video (configured in playwright.config.ts)
+
+## What NOT to do
+- No hardcoded waits (page.waitForTimeout) — use auto-waiting locators
+- No duplicate selectors across files — define once in page objects
+- No tests that depend on execution order
