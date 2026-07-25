@@ -47,6 +47,22 @@ function loadJsonReport() {
   return null;
 }
 
+const ERROR_MESSAGE_MAX = 240;
+
+/** Strip Playwright received-value blocks and cap length before writing artifacts. */
+function sanitizeErrorMessage(message) {
+  if (message == null) return null;
+  let text = String(message)
+    // Drop "Received string|number|..." / "Received:" value blocks (observed page text).
+    .replace(/\nReceived(?:\s+(?:string|number|object|value))?:[\s\S]*$/i, '')
+    .replace(/\bReceived string:\s*[\s\S]*$/im, '')
+    .trim();
+  if (text.length > ERROR_MESSAGE_MAX) {
+    text = `${text.slice(0, ERROR_MESSAGE_MAX)}…`;
+  }
+  return text;
+}
+
 function summarizeFromReport(report) {
   const suites = report?.suites || [];
   let passed = 0;
@@ -71,7 +87,7 @@ function summarizeFromReport(report) {
           failures.push({
             title: spec.title || t.title || 'untitled',
             status,
-            error: result?.error?.message || null,
+            error: sanitizeErrorMessage(result?.error?.message || null),
           });
         }
       }
