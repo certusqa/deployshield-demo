@@ -1,4 +1,4 @@
-name: DeployShield — Playwright Regression
+name: DeployShield — Pre-deploy gate
 
 on:
   push:
@@ -7,7 +7,8 @@ on:
     branches: [main, master]
 
 jobs:
-  playwright-regression:
+  pre-deploy-gate:
+    name: Critical flows (deploy cleared / blocked)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -30,9 +31,26 @@ jobs:
         working-directory: practice-client
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright regression suite
+      - name: Run critical-flow gate
+        id: gate
         working-directory: practice-client
         run: npm test
+
+      - name: Build Slack/Jira-shaped alert payload
+        if: always()
+        working-directory: practice-client
+        run: npm run alert:payload
+
+      - name: Summarize gate result
+        if: always()
+        run: |
+          if [ "${{ steps.gate.outcome }}" = "success" ]; then
+            echo "## Deploy cleared" >> "$GITHUB_STEP_SUMMARY"
+            echo "Critical Playwright flows passed. Safe to proceed with deploy from a QA gate perspective." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## Deploy blocked" >> "$GITHUB_STEP_SUMMARY"
+            echo "Critical Playwright flows failed. Do not deploy until the suite is green. Download **playwright-report**, **test-results**, and **deployshield-alert-payload** artifacts from this run." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload test report on failure
         if: failure()
@@ -48,4 +66,12 @@ jobs:
         with:
           name: test-results
           path: practice-client/test-results/
+          retention-days: 7
+
+      - name: Upload alert payload
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployshield-alert-payload
+          path: practice-client/alert-artifacts/
           retention-days: 7
