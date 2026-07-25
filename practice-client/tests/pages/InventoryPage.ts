@@ -5,6 +5,7 @@ export class InventoryPage {
   readonly pageTitle: Locator;
   readonly cartLink: Locator;
   readonly cartBadge: Locator;
+  readonly cartItemName: Locator;
   readonly checkoutButton: Locator;
 
   constructor(page: Page) {
@@ -12,6 +13,7 @@ export class InventoryPage {
     this.pageTitle = page.getByTestId('title');
     this.cartLink = page.getByTestId('shopping-cart-link');
     this.cartBadge = page.getByTestId('shopping-cart-badge');
+    this.cartItemName = page.locator('.cart_item .inventory_item_name');
     this.checkoutButton = page.getByRole('button', { name: 'Checkout' });
   }
 

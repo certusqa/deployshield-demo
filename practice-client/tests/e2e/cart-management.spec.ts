@@ -18,6 +18,10 @@ test.describe('Cart management', () => {
     await test.step('cart badge shows one item', async () => {
       await expect(inventoryPage.cartBadge).toHaveText('1');
     });
+    await test.step('cart lists the backpack', async () => {
+      await inventoryPage.openCart();
+      await expect(inventoryPage.cartItemName).toHaveText('Sauce Labs Backpack');
+    });
   });
 
   test('should remove item from cart', async ({ page }) => {
