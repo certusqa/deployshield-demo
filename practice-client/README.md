@@ -2,11 +2,13 @@
 
 Simulates onboarding a client whose app is live at **https://www.saucedemo.com** (Sauce Demo store).
 
-## Critical flows covered (5 tests)
+Parent repo README (brand + CI gate framing): [`../README.md`](../README.md)
 
-1. **User login** — valid credentials + locked-out user error
-2. **Cart management** — add item, remove item
-3. **Product checkout** — full purchase flow end-to-end
+## Critical flows covered (6 tests)
+
+1. **User login** — valid credentials + locked-out user error  
+2. **Cart management** — add item, remove item  
+3. **Product checkout** — full purchase + missing postal code (negative path)
 
 ## Run locally
 
@@ -17,7 +19,7 @@ npx playwright install chromium
 npm test
 ```
 
-**Node version:** Use Node 18–22 (LTS). Node 23+ may hit a Playwright + TypeScript import issue locally. GitHub Actions uses Node 20 and runs cleanly.
+**Node version:** Use Node 18–22 (LTS). GitHub Actions uses Node 20.
 
 ## View report after a run
 
@@ -25,11 +27,12 @@ npm test
 npm run test:report
 ```
 
-## CI/CD
+## CI / pre-deploy gate
 
-GitHub Actions workflow at `.github/workflows/playwright.yml` runs on every push and PR to `main`.
+GitHub Actions workflow at `.github/workflows/playwright.yml`:
 
-Push this repo to GitHub to see the green **Passed** build on your pipeline.
+- **Green** → deploy cleared  
+- **Red** → deploy blocked; Playwright HTML report + `test-results/` uploaded as artifacts  
 
 ## Project structure
 
@@ -38,15 +41,28 @@ practice-client/
 ├── .cursorrules          # DeployShield Playwright standards
 ├── playwright.config.ts  # Screenshots + video on failure
 ├── tests/
-│   ├── e2e/              # regression.spec.ts (5 tests)
+│   ├── e2e/              # regression.spec.ts
 │   ├── pages/            # Page Object Model classes
-│   └── fixtures/         # Test users and data
+│   └── fixtures/         # Test users and checkout data
 ```
+
+## MCP authoring + alert payload
+
+Base DeployShield MCP delivery runbook lives in the Certus business OS (`DEPLOYSHIELD_MCP_DELIVERY.md`).
+
+```bash
+# After a run — Slack/Jira-shaped JSON for Instant Alerts (paste manually on base Suite)
+npm run alert:payload
+# → alert-artifacts/last-alert-payload.json
+```
+
+Author flows with Playwright MCP against staging (live DOM). Cap: ≤15 critical flows.
 
 ## Client onboarding (real projects)
 
-1. Copy `delivery-template/` (or this entire structure) into the client repo root
-2. Open repo in Cursor, let it index
-3. Update `playwright.config.ts` with the client's staging URL
-4. Write page objects + specs for their top 5 flows
-5. Wire GitHub Actions or GitLab CI
+1. Copy this structure (or `delivery-template/`) into the client repo root  
+2. Open repo in Cursor; enable Playwright MCP; explore staging before writing selectors  
+3. Update `playwright.config.ts` with the client's **staging** URL (never production)  
+4. Write page objects + specs for ≤15 critical flows  
+5. Wire GitHub Actions or GitLab CI as a **required** check  
+6. On red builds, attach CI artifacts + paste `alert-artifacts/last-alert-payload.json` into Slack/Jira  

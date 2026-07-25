@@ -1,4 +1,4 @@
-import type { Locator, Page } from 'playwright';
+import type { Locator, Page } from '@playwright/test';
 
 export class CheckoutPage {
   readonly page: Page;
@@ -8,6 +8,7 @@ export class CheckoutPage {
   readonly continueButton: Locator;
   readonly finishButton: Locator;
   readonly completeHeader: Locator;
+  readonly errorMessage: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -17,6 +18,7 @@ export class CheckoutPage {
     this.continueButton = page.getByRole('button', { name: 'Continue' });
     this.finishButton = page.getByRole('button', { name: 'Finish' });
     this.completeHeader = page.locator('.complete-header');
+    this.errorMessage = page.locator('[data-test="error"]');
   }
 
   async fillShippingInfo(firstName: string, lastName: string, postalCode: string) {
