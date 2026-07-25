@@ -9,18 +9,18 @@ export class InventoryPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.pageTitle = page.locator('.title');
-    this.cartLink = page.locator('.shopping_cart_link');
-    this.cartBadge = page.locator('.shopping_cart_badge');
+    this.pageTitle = page.getByTestId('title');
+    this.cartLink = page.getByTestId('shopping-cart-link');
+    this.cartBadge = page.getByTestId('shopping-cart-badge');
     this.checkoutButton = page.getByRole('button', { name: 'Checkout' });
   }
 
   async addProductToCart(productTestId: string) {
-    await this.page.locator(`[data-test="add-to-cart-${productTestId}"]`).click();
+    await this.page.getByTestId(`add-to-cart-${productTestId}`).click();
   }
 
   async removeProductFromCart(productTestId: string) {
-    await this.page.locator(`[data-test="remove-${productTestId}"]`).click();
+    await this.page.getByTestId(`remove-${productTestId}`).click();
   }
 
   async openCart() {

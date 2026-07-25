@@ -9,6 +9,8 @@ export class CheckoutPage {
   readonly finishButton: Locator;
   readonly completeHeader: Locator;
   readonly errorMessage: Locator;
+  readonly overviewItemName: Locator;
+  readonly overviewItemPrice: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -19,6 +21,8 @@ export class CheckoutPage {
     this.finishButton = page.getByRole('button', { name: 'Finish' });
     this.completeHeader = page.locator('.complete-header');
     this.errorMessage = page.locator('[data-test="error"]');
+    this.overviewItemName = page.locator('.cart_item .inventory_item_name');
+    this.overviewItemPrice = page.locator('.cart_item .inventory_item_price');
   }
 
   async fillShippingInfo(firstName: string, lastName: string, postalCode: string) {

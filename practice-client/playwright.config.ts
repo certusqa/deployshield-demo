@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
+if (process.env.CI && !process.env.BASE_URL) {
+  throw new Error('BASE_URL must be set in CI');
+}
+
 const baseURL = process.env.BASE_URL ?? 'https://www.saucedemo.com';
 
 export default defineConfig({
@@ -15,6 +19,8 @@ export default defineConfig({
   ],
   use: {
     baseURL,
+    // Sauce Demo exposes data-test= (not data-testid=)
+    testIdAttribute: 'data-test',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
