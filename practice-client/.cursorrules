@@ -14,8 +14,7 @@ You write Playwright end-to-end tests for client projects. Follow these rules ex
 
 ## Code style
 - TypeScript only
-- Use @playwright/test imports in spec files
-- Import Page and Locator types from `playwright` (not @playwright/test) in page object files
+- Use @playwright/test imports in spec files (including Page and Locator types in page objects)
 - Prefer getByRole, getByLabel, getByTestId over CSS selectors
 - One assertion focus per test where possible
 - Use test.step() for multi-step flows
