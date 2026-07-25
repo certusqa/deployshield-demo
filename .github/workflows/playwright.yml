@@ -13,6 +13,8 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+    env:
+      BASE_URL: https://www.saucedemo.com
 
     steps:
       - name: Checkout repository
