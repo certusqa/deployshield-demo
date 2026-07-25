@@ -11,6 +11,8 @@ jobs:
     name: Critical flows (deploy cleared / blocked)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
