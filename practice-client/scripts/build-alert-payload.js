@@ -51,16 +51,21 @@ function summarizeFromReport(report) {
   const suites = report?.suites || [];
   let passed = 0;
   let failed = 0;
+  let flaky = 0;
   let skipped = 0;
   const failures = [];
 
   function walk(suite) {
     for (const spec of suite.specs || []) {
       for (const t of spec.tests || []) {
-        const result = (t.results || [])[t.results.length - 1];
+        const results = t.results || [];
+        const result = results[results.length - 1];
         const status = result?.status || t.status || 'unknown';
-        if (status === 'passed' || status === 'expected') passed += 1;
-        else if (status === 'skipped') skipped += 1;
+        const isFlaky = t.status === 'flaky' || results.length > 1;
+        if (status === 'passed' || status === 'expected') {
+          if (isFlaky) flaky += 1;
+          else passed += 1;
+        } else if (status === 'skipped') skipped += 1;
         else {
           failed += 1;
           failures.push({
@@ -75,7 +80,7 @@ function summarizeFromReport(report) {
   }
 
   for (const s of suites) walk(s);
-  return { passed, failed, skipped, failures };
+  return { passed, failed, flaky, skipped, failures };
 }
 
 const media = listFailureMedia(resultsDir);
@@ -85,12 +90,18 @@ const summary = report
   : {
       passed: null,
       failed: media.length ? null : 0,
+      flaky: media.length ? null : 0,
       skipped: null,
       failures: [],
       note: 'No results.json found — include reporter: [["json", { outputFile: "test-results/results.json" }]] for full counts.',
     };
 
-const gate = summary.failed && summary.failed > 0 ? 'BLOCK_DEPLOY' : media.length ? 'REVIEW_ARTIFACTS' : 'CLEAR_TO_DEPLOY';
+const gate =
+  summary.failed > 0
+    ? 'BLOCK_DEPLOY'
+    : summary.flaky > 0 || media.length
+      ? 'REVIEW_ARTIFACTS'
+      : 'CLEAR_TO_DEPLOY';
 
 const payload = {
   schemaVersion: '1.0.0',
@@ -100,6 +111,7 @@ const payload = {
   summary: {
     passed: summary.passed,
     failed: summary.failed,
+    flaky: summary.flaky,
     skipped: summary.skipped,
   },
   failures: summary.failures || [],
