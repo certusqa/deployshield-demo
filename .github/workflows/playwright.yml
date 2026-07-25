@@ -31,6 +31,10 @@ jobs:
         working-directory: practice-client
         run: npx playwright install --with-deps chromium
 
+      - name: Typecheck
+        working-directory: practice-client
+        run: npm run typecheck
+
       - name: Run critical-flow gate
         id: gate
         working-directory: practice-client

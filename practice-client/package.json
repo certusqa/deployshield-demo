@@ -9,6 +9,7 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
+    "typecheck": "tsc --noEmit",
     "alert:payload": "node scripts/build-alert-payload.js",
     "test:gate": "playwright test && node scripts/build-alert-payload.js"
   },
