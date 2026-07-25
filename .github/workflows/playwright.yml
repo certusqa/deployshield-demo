@@ -1,3 +1,6 @@
+# Intentionally independent of QA_Package/.github/workflows/playwright.yml.
+# Public pre-deploy gate (includes Summarize step) vs private delivery-drill workflow.
+# Shared security or BASE_URL fixes must be applied to both by hand — REPO_SYNC does not rsync .github/.
 name: DeployShield — Pre-deploy gate
 
 on:
