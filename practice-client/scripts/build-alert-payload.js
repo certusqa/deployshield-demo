@@ -30,21 +30,33 @@ function listFailureMedia(dir, acc = []) {
   return acc;
 }
 
+/**
+ * Three states — never treat an unreadable file as "no report":
+ *   parsed | absent | unparseable
+ */
 function loadJsonReport() {
   const candidates = [
     path.join(resultsDir, 'results.json'),
     path.join(root, 'playwright-report', 'results.json'),
   ];
   for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      try {
-        return JSON.parse(fs.readFileSync(p, 'utf8'));
-      } catch {
-        /* ignore */
-      }
+    if (!fs.existsSync(p)) continue;
+    try {
+      return {
+        status: 'parsed',
+        report: JSON.parse(fs.readFileSync(p, 'utf8')),
+        path: path.relative(root, p),
+      };
+    } catch (err) {
+      return {
+        status: 'unparseable',
+        report: null,
+        path: path.relative(root, p),
+        error: err instanceof Error ? err.message : String(err),
+      };
     }
   }
-  return null;
+  return { status: 'absent', report: null, path: null };
 }
 
 const ERROR_MESSAGE_MAX = 240;
@@ -100,30 +112,50 @@ function summarizeFromReport(report) {
 }
 
 const media = listFailureMedia(resultsDir);
-const report = loadJsonReport();
-const summary = report
-  ? summarizeFromReport(report)
-  : {
-      passed: null,
-      failed: media.length ? null : 0,
-      flaky: media.length ? null : 0,
-      skipped: null,
-      failures: [],
-      note: 'No results.json found — include reporter: [["json", { outputFile: "test-results/results.json" }]] for full counts.',
-    };
+const loaded = loadJsonReport();
 
-const gate =
-  summary.failed > 0
-    ? 'BLOCK_DEPLOY'
-    : summary.flaky > 0 || media.length
-      ? 'REVIEW_ARTIFACTS'
-      : 'CLEAR_TO_DEPLOY';
+let summary;
+let gate;
+
+if (loaded.status === 'parsed') {
+  summary = summarizeFromReport(loaded.report);
+  gate =
+    summary.failed > 0
+      ? 'BLOCK_DEPLOY'
+      : summary.flaky > 0 || media.length
+        ? 'REVIEW_ARTIFACTS'
+        : 'CLEAR_TO_DEPLOY';
+} else if (loaded.status === 'unparseable') {
+  // Corrupt / mid-write report is not a green run — and not a counted failure either.
+  summary = {
+    passed: null,
+    failed: null,
+    flaky: null,
+    skipped: null,
+    failures: [],
+    note: `results.json present but unparseable: ${loaded.path}`,
+  };
+  gate = 'INSUFFICIENT_EVIDENCE';
+} else {
+  // Absent — do not default failed to 0 (that would CLEAR_TO_DEPLOY).
+  summary = {
+    passed: null,
+    failed: null,
+    flaky: null,
+    skipped: null,
+    failures: [],
+    note: 'No results.json found — include reporter: [["json", { outputFile: "test-results/results.json" }]] for full counts.',
+  };
+  gate = 'INSUFFICIENT_EVIDENCE';
+}
 
 const payload = {
   schemaVersion: '1.0.0',
   product: 'DeployShield Suite',
   generatedAt: new Date().toISOString(),
   gateRecommendation: gate,
+  reportStatus: loaded.status,
+  reportPath: loaded.path,
   summary: {
     passed: summary.passed,
     failed: summary.failed,
@@ -139,7 +171,9 @@ const payload = {
     text:
       gate === 'CLEAR_TO_DEPLOY'
         ? 'DeployShield gate: CLEAR_TO_DEPLOY — regression suite green.'
-        : `DeployShield gate: ${gate} — ${summary.failed ?? '?'} failed test(s). See artifacts (screenshots/video).`,
+        : gate === 'INSUFFICIENT_EVIDENCE'
+          ? `DeployShield gate: INSUFFICIENT_EVIDENCE — results.json ${loaded.status}${loaded.path ? ` (${loaded.path})` : ''}. Do not treat as green.`
+          : `DeployShield gate: ${gate} — ${summary.failed ?? '?'} failed test(s). See artifacts (screenshots/video).`,
     blocks: [
       {
         type: 'section',
@@ -155,20 +189,33 @@ const payload = {
     description:
       gate === 'CLEAR_TO_DEPLOY'
         ? 'Regression suite passed. Covered flows clear to deploy.'
-        : [
-            `Gate: ${gate}`,
-            '',
-            'Failures:',
-            ...(summary.failures || []).map((f) => `- ${f.title}: ${f.error || f.status}`),
-            '',
-            'Attach CI artifacts: playwright-report + test-results (screenshots/video).',
-          ].join('\n'),
+        : gate === 'INSUFFICIENT_EVIDENCE'
+          ? [
+              `Gate: ${gate}`,
+              `Report status: ${loaded.status}`,
+              loaded.path ? `Unreadable/missing path: ${loaded.path}` : 'No results.json candidate found.',
+              summary.note || '',
+              '',
+              'Do not deploy — the gate lacks a readable Playwright JSON report.',
+            ].join('\n')
+          : [
+              `Gate: ${gate}`,
+              '',
+              'Failures:',
+              ...(summary.failures || []).map((f) => `- ${f.title}: ${f.error || f.status}`),
+              '',
+              'Attach CI artifacts: playwright-report + test-results (screenshots/video).',
+            ].join('\n'),
     labels: ['deployshield', 'pre-deploy-gate'],
   },
 };
 
+if (summary.note) payload.summary.note = summary.note;
+
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(payload, null, 2));
 console.log(`Wrote ${path.relative(root, outPath)}`);
-console.log(`gateRecommendation=${gate} media=${media.length}`);
+console.log(
+  `gateRecommendation=${gate} reportStatus=${loaded.status} reportPath=${loaded.path || '-'} media=${media.length}`,
+);
 process.exit(0);
