@@ -61,6 +61,17 @@ function loadJsonReport() {
 
 const ERROR_MESSAGE_MAX = 240;
 
+/**
+ * Collapse newlines and escape wiki/markdown metacharacters so failure text
+ * cannot inject extra lines or markup into the Jira description string.
+ */
+function escapeJiraField(value) {
+  if (value == null) return '';
+  return String(value)
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/([\\{}^*_\-~\[\]|])/g, '\\$1');
+}
+
 /** Strip Playwright received-value blocks and cap length before writing artifacts. */
 function sanitizeErrorMessage(message) {
   if (message == null) return null;
@@ -202,7 +213,9 @@ const payload = {
               `Gate: ${gate}`,
               '',
               'Failures:',
-              ...(summary.failures || []).map((f) => `- ${f.title}: ${f.error || f.status}`),
+              ...(summary.failures || []).map(
+                (f) => `- ${escapeJiraField(f.title)}: ${escapeJiraField(f.error || f.status)}`,
+              ),
               '',
               'Attach CI artifacts: playwright-report + test-results (screenshots/video).',
             ].join('\n'),
