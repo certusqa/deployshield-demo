@@ -21,7 +21,7 @@ function listFailureMedia(dir, acc = []) {
   if (!fs.existsSync(dir)) return acc;
   for (const name of fs.readdirSync(dir)) {
     const full = path.join(dir, name);
-    const st = fs.statSync(full);
+    const st = fs.lstatSync(full);
     if (st.isDirectory()) listFailureMedia(full, acc);
     else if (/\.(png|webm|zip)$/i.test(name)) {
       acc.push(path.relative(root, full));
