@@ -1,6 +1,7 @@
 # Intentionally independent of QA_Package/.github/workflows/playwright.yml.
 # Public pre-deploy gate (includes Summarize step) vs private delivery-drill workflow.
 # Shared security or BASE_URL fixes must be applied to both by hand — REPO_SYNC does not rsync .github/.
+# Hermetic gate only — demo SUT via Playwright webServer. Live Sauce Demo is playwright-live.yml.
 name: DeployShield — Pre-deploy gate
 
 on:
@@ -17,7 +18,7 @@ jobs:
     permissions:
       contents: read
     env:
-      BASE_URL: https://www.saucedemo.com
+      BASE_URL: http://127.0.0.1:4173
 
     steps:
       - name: Checkout repository
@@ -57,7 +58,7 @@ jobs:
         run: |
           if [ "${{ steps.gate.outcome }}" = "success" ]; then
             echo "## Deploy cleared" >> "$GITHUB_STEP_SUMMARY"
-            echo "Critical Playwright flows passed. Safe to proceed with deploy from a QA gate perspective." >> "$GITHUB_STEP_SUMMARY"
+            echo "Critical Playwright flows passed against the hermetic demo SUT. Safe to proceed with deploy from a QA gate perspective." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "## Deploy blocked" >> "$GITHUB_STEP_SUMMARY"
             echo "Critical Playwright flows failed. Do not deploy until the suite is green. Download **playwright-report**, **test-results**, and **deployshield-alert-payload** artifacts from this run." >> "$GITHUB_STEP_SUMMARY"

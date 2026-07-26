@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Cart</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1>Your Cart</h1>
+    <a href="/cart.html" data-test="shopping-cart-link" id="cart-link">Cart</a>
+  </div>
+  <div id="cart-items"></div>
+  <button type="button" id="checkout">Checkout</button>
+  <script>
+    if (!DemoSut.requireLogin()) { /* redirecting */ }
+    else {
+      var cart = DemoSut.getCart();
+      if (cart.length > 0) {
+        var badge = document.createElement('span');
+        badge.setAttribute('data-test', 'shopping-cart-badge');
+        badge.textContent = String(cart.length);
+        document.getElementById('cart-link').appendChild(badge);
+      }
+      var root = document.getElementById('cart-items');
+      cart.forEach(function (item) {
+        var el = document.createElement('div');
+        el.className = 'cart_item';
+        el.innerHTML =
+          '<div class="inventory_item_name"></div>' +
+          '<div class="inventory_item_price"></div>';
+        el.querySelector('.inventory_item_name').textContent = item.name;
+        el.querySelector('.inventory_item_price').textContent = item.price;
+        root.appendChild(el);
+      });
+      document.getElementById('checkout').addEventListener('click', function () {
+        window.location.href = '/checkout-step-one.html';
+      });
+    }
+  </script>
+</body>
+</html>

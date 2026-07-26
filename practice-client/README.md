@@ -1,8 +1,10 @@
 # Practice Client — DeployShield Delivery Demo
 
-Simulates onboarding a client whose app is live at **https://www.saucedemo.com** (Sauce Demo store).
+Simulates onboarding a client whose staging app is represented by the hermetic **demo SUT** at `fixtures/sut/` (Playwright `webServer` on `http://127.0.0.1:4173`). The CI badge/gate runs against that SUT only.
 
-Parent repo README (brand + CI gate framing): [`../README.md`](../README.md)
+Live [Sauce Demo](https://www.saucedemo.com) remains available as an optional soft canary (`SKIP_WEBSERVER=1 BASE_URL=https://www.saucedemo.com npm test`, or `.github/workflows/playwright-live.yml`) — not as sales proof.
+
+Repo-root README (brand + CI gate framing): [`../README.md`](../README.md)
 
 ## Critical flows covered (6 tests)
 
@@ -31,24 +33,27 @@ npm run test:report
 
 GitHub Actions workflow at `.github/workflows/playwright.yml`:
 
-- **Green** → deploy cleared  
+- **Green** → deploy cleared (hermetic demo SUT)  
 - **Red** → deploy blocked; Playwright HTML report + `test-results/` uploaded as artifacts  
+
+Live Sauce Demo canary: `.github/workflows/playwright-live.yml` (schedule / manual, no README badge).
 
 ## Project structure
 
 ```
 practice-client/
 ├── .cursorrules          # DeployShield Playwright standards
-├── playwright.config.ts  # Screenshots + video on failure
+├── playwright.config.ts  # webServer → demo SUT; screenshots + video on failure
+├── fixtures/sut/         # Hermetic demo SUT (static pages + node:http)
 ├── tests/
-│   ├── e2e/              # regression.spec.ts
+│   ├── e2e/              # Critical-flow specs
 │   ├── pages/            # Page Object Model classes
 │   └── fixtures/         # Test users and checkout data
 ```
 
 ## MCP authoring + alert payload
 
-Base DeployShield MCP delivery runbook lives in the Certus business OS (`DEPLOYSHIELD_MCP_DELIVERY.md`).
+Full runbook: [`../docs/DEPLOYSHIELD_MCP_DELIVERY.md`](../docs/DEPLOYSHIELD_MCP_DELIVERY.md)
 
 ```bash
 # After a run — Slack/Jira-shaped JSON for Instant Alerts (paste manually on base Suite)

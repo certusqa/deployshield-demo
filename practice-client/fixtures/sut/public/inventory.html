@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Products</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js"></script>
+</head>
+<body>
+  <div class="header">
+    <h1 data-test="title">Products</h1>
+    <a href="/cart.html" data-test="shopping-cart-link" id="cart-link">Cart</a>
+  </div>
+  <div class="inventory_item">
+    <div class="inventory_item_name">Sauce Labs Backpack</div>
+    <div class="inventory_item_price">$29.99</div>
+    <button type="button" data-test="add-to-cart-sauce-labs-backpack" id="add-btn">Add to cart</button>
+    <button type="button" data-test="remove-sauce-labs-backpack" id="remove-btn" hidden>Remove</button>
+  </div>
+  <script>
+    if (!DemoSut.requireLogin()) { /* redirecting */ }
+    else {
+      function refresh() {
+        var inCart = DemoSut.getCart().some(function (i) { return i.id === DemoSut.PRODUCT.id; });
+        var count = DemoSut.cartCount();
+        var link = document.getElementById('cart-link');
+        var badge = document.querySelector('[data-test="shopping-cart-badge"]');
+        document.getElementById('add-btn').hidden = inCart;
+        document.getElementById('remove-btn').hidden = !inCart;
+        if (count > 0) {
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.setAttribute('data-test', 'shopping-cart-badge');
+            link.appendChild(badge);
+          }
+          badge.textContent = String(count);
+        } else if (badge) {
+          badge.remove();
+        }
+      }
+      document.getElementById('add-btn').addEventListener('click', function () {
+        DemoSut.addProduct('sauce-labs-backpack');
+        refresh();
+      });
+      document.getElementById('remove-btn').addEventListener('click', function () {
+        DemoSut.removeProduct('sauce-labs-backpack');
+        refresh();
+      });
+      refresh();
+    }
+  </script>
+</body>
+</html>

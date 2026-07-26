@@ -8,7 +8,7 @@ Public proof of what [CertusQA](https://certusqa.com) delivers with **The Deploy
 
 **Outcome:** CI stays green, or deploy is blocked with failure artifacts (screenshots, video, HTML report, Slack/Jira-shaped alert payload).
 
-**Target app:** [Sauce Demo](https://www.saucedemo.com) — practice stand-in for a client staging environment (public credentials only).
+**Target app:** a hermetic **demo SUT** in `practice-client/fixtures/sut/` — a minimal local stand-in for a client staging environment (same `data-test` contract the page objects use). The README badge asserts continuous gate status against that SUT, not a third-party storefront's uptime.
 
 ## CI status
 
@@ -16,8 +16,10 @@ Public proof of what [CertusQA](https://certusqa.com) delivers with **The Deploy
 
 | Result | Meaning |
 |--------|---------|
-| Green | **Deploy cleared** — critical flows passed |
+| Green | **Deploy cleared** — critical flows passed against the demo SUT |
 | Red | **Deploy blocked** — open the workflow artifacts for the failure report |
+
+A separate scheduled/manual workflow (`playwright-live.yml`) soft-canaries live [Sauce Demo](https://www.saucedemo.com). It is **not** badged here — a claim about our gate must not be falsifiable by someone else's uptime. (Contrast: a recorded showcase run is honest about being a snapshot; a badge asserts present continuous status.)
 
 ## What's covered (6 tests)
 
@@ -32,7 +34,7 @@ Public proof of what [CertusQA](https://certusqa.com) delivers with **The Deploy
 
 | Demo | DeployShield Suite ($2,500/mo) |
 |------|--------------------------------|
-| 6 Sauce Demo flows | Up to 15 Playwright flows on your staging app |
+| 6 critical flows on the demo SUT | Up to 15 Playwright flows on your staging app |
 | GitHub Actions gate | CI/CD green-before-deploy |
 | Screenshots / video / HTML report + Slack/Jira-shaped `alert:payload` | Slack / Jira failure artifacts |
 | Page objects + fixtures | Same delivery shape we install in client repos |
@@ -47,6 +49,8 @@ npm install
 npx playwright install chromium
 npm test
 ```
+
+Playwright starts the demo SUT via `webServer` (`http://127.0.0.1:4173`) unless `SKIP_WEBSERVER=1` is set.
 
 **Node:** 18–22 (LTS). GitHub Actions uses Node 20.
 

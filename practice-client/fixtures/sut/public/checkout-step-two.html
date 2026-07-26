@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Checkout Overview</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js"></script>
+</head>
+<body>
+  <h1>Checkout: Overview</h1>
+  <div id="cart-items"></div>
+  <button type="button" id="finish">Finish</button>
+  <script>
+    if (!DemoSut.requireLogin()) { /* redirecting */ }
+    else {
+      var root = document.getElementById('cart-items');
+      DemoSut.getCart().forEach(function (item) {
+        var el = document.createElement('div');
+        el.className = 'cart_item';
+        el.innerHTML =
+          '<div class="inventory_item_name"></div>' +
+          '<div class="inventory_item_price"></div>';
+        el.querySelector('.inventory_item_name').textContent = item.name;
+        el.querySelector('.inventory_item_price').textContent = item.price;
+        root.appendChild(el);
+      });
+      document.getElementById('finish').addEventListener('click', function () {
+        window.location.href = '/checkout-complete.html';
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# Soft canary against live Sauce Demo — NOT sales proof.
+# No README badge. Schedule / manual only. Hermetic gate is playwright.yml.
+# Intentionally independent of QA_Package/.github/workflows/playwright-live.yml.
+name: DeployShield — Live Sauce Demo canary
+
+on:
+  schedule:
+    - cron: '0 14 * * 1'
+  workflow_dispatch:
+
+jobs:
+  live-saucedemo-canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      BASE_URL: https://www.saucedemo.com
+      SKIP_WEBSERVER: '1'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: practice-client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: practice-client
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: practice-client
+        run: npx playwright install --with-deps chromium
+
+      - name: Run live Sauce Demo canary
+        working-directory: practice-client
+        run: npm test
+
+      - name: Upload test report on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-canary-playwright-report
+          path: practice-client/playwright-report/
+          retention-days: 7
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: live-canary-test-results
+          path: practice-client/test-results/
+          retention-days: 7

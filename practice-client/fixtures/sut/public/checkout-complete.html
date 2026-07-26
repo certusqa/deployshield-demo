@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Complete</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js"></script>
+</head>
+<body>
+  <h1 class="complete-header">Thank you for your order!</h1>
+  <p>Your order has been dispatched.</p>
+  <script>
+    DemoSut.requireLogin();
+    sessionStorage.setItem('cart', '[]');
+  </script>
+</body>
+</html>

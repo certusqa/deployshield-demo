@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Checkout Info</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/app.js"></script>
+</head>
+<body>
+  <h1>Checkout: Your Information</h1>
+  <form id="info-form">
+    <label for="first-name">First Name</label>
+    <input id="first-name" type="text" placeholder="First Name" />
+    <label for="last-name">Last Name</label>
+    <input id="last-name" type="text" placeholder="Last Name" />
+    <label for="postal-code">Zip/Postal Code</label>
+    <input id="postal-code" type="text" placeholder="Zip/Postal Code" />
+    <button type="submit">Continue</button>
+  </form>
+  <div id="error" class="error" data-test="error" hidden></div>
+  <script>
+    if (!DemoSut.requireLogin()) { /* redirecting */ }
+    else {
+      document.getElementById('info-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var postal = document.getElementById('postal-code').value.trim();
+        var err = document.getElementById('error');
+        if (!postal) {
+          err.textContent = 'Error: Postal Code is required';
+          err.hidden = false;
+          return;
+        }
+        err.hidden = true;
+        window.location.href = '/checkout-step-two.html';
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Demo SUT — Login</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <h1>Demo SUT Login</h1>
+  <form id="login-form">
+    <label for="user-name">Username</label>
+    <input id="user-name" type="text" placeholder="Username" autocomplete="username" />
+    <label for="password">Password</label>
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+    <button type="submit">Login</button>
+  </form>
+  <div id="error" class="error" data-test="error" hidden></div>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var user = document.getElementById('user-name').value;
+      var pass = document.getElementById('password').value;
+      var err = document.getElementById('error');
+      err.hidden = true;
+      err.textContent = '';
+
+      if (user === 'locked_out_user' && pass === 'secret_sauce') {
+        err.textContent = 'Epic sadface: Sorry, this user has been locked out.';
+        err.hidden = false;
+        return;
+      }
+      if (user === 'standard_user' && pass === 'secret_sauce') {
+        sessionStorage.setItem('loggedIn', '1');
+        sessionStorage.setItem('cart', '[]');
+        window.location.href = '/inventory.html';
+        return;
+      }
+      err.textContent = 'Epic sadface: Username and password do not match any user in this service';
+      err.hidden = false;
+    });
+  </script>
+</body>
+</html>
