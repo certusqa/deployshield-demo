@@ -11,7 +11,7 @@
     "test:report": "playwright show-report",
     "typecheck": "tsc --noEmit",
     "alert:payload": "node scripts/build-alert-payload.js",
-    "test:gate": "playwright test && node scripts/build-alert-payload.js"
+    "test:gate": "playwright test; node scripts/build-alert-payload.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

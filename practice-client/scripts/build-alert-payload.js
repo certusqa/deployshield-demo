@@ -231,4 +231,27 @@ console.log(`Wrote ${path.relative(root, outPath)}`);
 console.log(
   `gateRecommendation=${gate} reportStatus=${loaded.status} reportPath=${loaded.path || '-'} media=${media.length}`,
 );
-process.exit(0);
+
+/**
+ * Exit code carries the gate verdict, so `npm run test:gate` and any CI step
+ * that shells out to this script can actually gate on it. It used to always
+ * exit 0, which made the verdict advisory-only.
+ *
+ *   CLEAR_TO_DEPLOY     -> 0
+ *   REVIEW_ARTIFACTS    -> 0, with a warning (retried-flaky or failure media
+ *                          present; a human decides). Set DEPLOYSHIELD_STRICT=1
+ *                          to treat this as blocking too.
+ *   BLOCK_DEPLOY        -> 1
+ *   INSUFFICIENT_EVIDENCE -> 1  (absent/corrupt report is never green)
+ */
+const strict = process.env.DEPLOYSHIELD_STRICT === '1';
+if (gate === 'CLEAR_TO_DEPLOY') process.exit(0);
+if (gate === 'REVIEW_ARTIFACTS') {
+  console.warn(
+    `WARNING: ${gate} — ${summary.flaky ?? '?'} flaky test(s), ${media.length} failure artifact(s). ` +
+      'Not an automatic pass. Re-run with DEPLOYSHIELD_STRICT=1 to make this blocking.',
+  );
+  process.exit(strict ? 1 : 0);
+}
+console.error(`Gate is ${gate} — not clear to deploy.`);
+process.exit(1);
