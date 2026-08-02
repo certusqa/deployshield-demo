@@ -9,6 +9,7 @@
  * Live API bots = later product phase.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -225,11 +226,30 @@ const payload = {
 
 if (summary.note) payload.summary.note = summary.note;
 
+/**
+ * Optional HMAC (Phase 2). Set CERTUSQA_WEBHOOK_SECRET in CI/env to attach
+ * sha256 digest + headers hint for future Slack/Jira bot delivery. Unsigned
+ * when unset (manual paste workflow unchanged).
+ */
+const webhookSecret = process.env.CERTUSQA_WEBHOOK_SECRET || '';
+if (webhookSecret) {
+  const ts = Math.floor(Date.now() / 1000);
+  const body = JSON.stringify(payload);
+  const digest = crypto.createHmac('sha256', webhookSecret).update(body, 'utf8').digest('hex');
+  payload.signature = {
+    algorithm: 'sha256',
+    timestamp: ts,
+    digest,
+    header: `sha256=${digest}`,
+  };
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(payload, null, 2));
 console.log(`Wrote ${path.relative(root, outPath)}`);
 console.log(
-  `gateRecommendation=${gate} reportStatus=${loaded.status} reportPath=${loaded.path || '-'} media=${media.length}`,
+  `gateRecommendation=${gate} reportStatus=${loaded.status} reportPath=${loaded.path || '-'} media=${media.length}` +
+    (webhookSecret ? ' signed=sha256' : ''),
 );
 
 /**
