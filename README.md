@@ -32,7 +32,7 @@ A separate scheduled/manual workflow (`playwright-live.yml`) soft-canaries live 
 
 ## What this maps to in the product
 
-| Demo | DeployShield Suite ($2,500/mo) |
+| Demo | DeployShield Suite ($7,200/mo) |
 |------|--------------------------------|
 | 6 critical flows on the demo SUT | Up to 15 Playwright flows on your staging app |
 | GitHub Actions gate | CI/CD green-before-deploy |
