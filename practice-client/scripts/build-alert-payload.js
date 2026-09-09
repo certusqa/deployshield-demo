@@ -24,7 +24,7 @@ function listFailureMedia(dir, acc = []) {
     const full = path.join(dir, name);
     const st = fs.lstatSync(full);
     if (st.isDirectory()) listFailureMedia(full, acc);
-    else if (/\.(png|webm|zip)$/i.test(name)) {
+    else if (/\.(png|webp|webm|zip)$/i.test(name)) {
       acc.push(path.relative(root, full));
     }
   }
@@ -156,7 +156,7 @@ if (loaded.status === 'parsed') {
     flaky: null,
     skipped: null,
     failures: [],
-    note: 'No results.json found — include reporter: [["json", { outputFile: "test-results/results.json" }]] for full counts.',
+    note: 'No results.json found — run Playwright 1.63+ with --add-reporter json and PLAYWRIGHT_JSON_OUTPUT_FILE=test-results/results.json, or include reporter: [["json", { outputFile: "test-results/results.json" }]] for full counts.',
   };
   gate = 'INSUFFICIENT_EVIDENCE';
 }
