@@ -2,7 +2,7 @@
   "name": "deployshield-practice-client",
   "version": "1.0.0",
   "engines": {
-    "node": ">=18 <=22"
+    "node": ">=20 <=22"
   },
   "description": "Practice client repo — DeployShield Suite delivery demo",
   "scripts": {
@@ -14,7 +14,7 @@
     "test:gate": "playwright test; node scripts/build-alert-payload.js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^22.15.0",
     "typescript": "^5.8.0"
   }
