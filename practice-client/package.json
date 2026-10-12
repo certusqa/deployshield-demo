@@ -14,7 +14,7 @@
     "test:gate": "playwright test; node scripts/build-alert-payload.js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "^1.64.0",
     "@types/node": "^22.15.0",
     "typescript": "^5.8.0"
   }
