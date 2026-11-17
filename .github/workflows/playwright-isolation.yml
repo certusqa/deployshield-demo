@@ -1,0 +1,64 @@
+# Order-isolation check — NOT the pre-deploy gate, and not badged.
+# Runs the same hermetic suite in a shuffled order (Playwright 1.64 --shuffle) with one worker, so a
+# test that only passes in its usual position — one that leans on another test's state — fails here.
+# Kept out of playwright.yml on purpose: the README badge reflects every job in that workflow, and a
+# release is never gated on a shuffled run. The seed is the run id, printed in the job summary;
+# re-run with the same --shuffle <seed> to reproduce the order exactly.
+# Intentionally independent of QA_Package/.github/workflows/playwright-isolation.yml.
+name: DeployShield — Order isolation (shuffled)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  order-isolation:
+    name: Critical flows in a shuffled order
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      BASE_URL: http://127.0.0.1:4173
+      SHUFFLE_SEED: ${{ github.run_id }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: practice-client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: practice-client
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: practice-client
+        run: npx playwright install --with-deps chromium
+
+      - name: Run the suite in a shuffled order
+        id: shuffled
+        working-directory: practice-client
+        run: npx playwright test --shuffle "$SHUFFLE_SEED"
+
+      - name: Say how to reproduce it
+        if: always()
+        run: |
+          echo "## Order isolation: ${{ steps.shuffled.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Shuffle seed \`$SHUFFLE_SEED\`. Reproduce the order with \`npx playwright test --shuffle $SHUFFLE_SEED\`." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: isolation-test-results
+          path: practice-client/test-results/
+          retention-days: 7

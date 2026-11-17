@@ -21,6 +21,8 @@ Public proof of what [CertusQA](https://certusqa.com) delivers with **The Deploy
 
 A separate scheduled/manual workflow (`playwright-live.yml`) soft-canaries live [Sauce Demo](https://www.saucedemo.com). It is **not** badged here — a claim about our gate must not be falsifiable by someone else's uptime. (Contrast: a recorded showcase run is honest about being a snapshot; a badge asserts present continuous status.)
 
+A second unbadged workflow (`playwright-isolation.yml`) runs the same suite in a shuffled order on every push, so a test that only passes after another one fails there. The badge stays on the unshuffled gate: a release is never gated on a shuffled run.
+
 ## What's covered (6 tests)
 
 1. User login — valid credentials  
