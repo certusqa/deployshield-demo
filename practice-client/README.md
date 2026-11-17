@@ -21,7 +21,7 @@ npx playwright install chromium
 npm test
 ```
 
-**Node version:** Use Node 20–22 (LTS; Playwright 1.63 requires Node 20+). GitHub Actions uses Node 20.
+**Node version:** Use Node 22 or later (Playwright 1.65 is tested on Node 22, 24 and 26, and no longer on 20). GitHub Actions uses Node 22.
 
 ## View report after a run
 

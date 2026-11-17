@@ -52,7 +52,7 @@ npm test
 
 Playwright starts the demo SUT via `webServer` (`http://127.0.0.1:4173`) unless `SKIP_WEBSERVER=1` is set.
 
-**Node:** 18–22 (LTS). GitHub Actions uses Node 20.
+**Node:** 22 or later (Playwright 1.65 is tested on Node 22, 24 and 26). GitHub Actions uses Node 22.
 
 ```bash
 npm run test:report   # HTML report after a run
