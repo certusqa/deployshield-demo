@@ -38,6 +38,8 @@ GitHub Actions workflow at `.github/workflows/playwright.yml`:
 
 Live Sauce Demo canary: `.github/workflows/playwright-live.yml` (schedule / manual, no README badge).
 
+Browsers: `npm test` runs Chromium, the gate. Firefox and WebKit are configured with `default: false`; after `npx playwright install firefox webkit`, run `npx playwright test --project=firefox` for one or `npx playwright test --project='*'` for all three, as the live canary does.
+
 Order isolation: `.github/workflows/playwright-isolation.yml` runs the same suite with `--shuffle <run id>` and one worker, so a test that only passes in its usual position fails there. It is not the gate and has no badge; the seed is in the job summary, and `npx playwright test --shuffle <seed>` reproduces the order.
 
 ## Project structure

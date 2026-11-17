@@ -41,10 +41,24 @@ export default defineConfig({
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
       },
+  // Chromium is the gate. Firefox and WebKit are configured but kept off by default (Playwright
+  // 1.64 `default: false`): `npm test` runs Chromium only, `--project=firefox` runs one, and
+  // `--project='*'` runs all three — which the scheduled live canary does. The badge stays on
+  // Chromium, so the claim it makes does not depend on two more engines.
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      default: false,
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      default: false,
     },
   ],
 });

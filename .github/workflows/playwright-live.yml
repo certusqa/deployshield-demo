@@ -35,11 +35,13 @@ jobs:
 
       - name: Install Playwright browsers
         working-directory: practice-client
-        run: npx playwright install --with-deps chromium
+        # All three engines: the canary runs every configured project (firefox and webkit are
+        # default: false in playwright.config.ts, so the badged gate stays Chromium-only).
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Run live Sauce Demo canary
         working-directory: practice-client
-        run: npm test
+        run: npx playwright test --project='*'
 
       - name: Upload test report on failure
         if: failure()
